@@ -3,23 +3,32 @@ use crate::modules::database::DatabaseManager;
 use crate::modules::lockdown::LockdownManager;
 use std::sync::Arc;
 use tauri::Manager;
+use log::{info, error};
 
 pub mod modules;
 
 #[tauri::command]
 async fn get_logic_gate(id: String, state: tauri::State<'_, AppState>) -> Result<String, String> {
-    state.db.get_curriculum(&id).await
+    info!("Fetching curriculum: {}", id);
+    state.db.get_curriculum(&id).await.map_err(|e| {
+        error!("Failed to fetch curriculum {}: {}", id, e);
+        e
+    })
 }
 
 #[tauri::command]
-fn exit_application() {
-    std::process::exit(0);
+fn exit_application(app_handle: tauri::AppHandle) {
+    info!("Application exit requested.");
+    app_handle.exit(0);
 }
 
 #[tauri::command]
 async fn clear_user_data(state: tauri::State<'_, AppState>) -> Result<(), String> {
-    // Logic to clear performance logs
-    Ok(())
+    info!("Clearing performance logs.");
+    state.db.clear_logs().await.map_err(|e| {
+        error!("Failed to clear logs: {}", e);
+        e
+    })
 }
 
 pub struct AppState {
@@ -30,36 +39,53 @@ pub struct AppState {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let crypto = Arc::new(CryptoManager::new());
-    let lockdown = Arc::new(LockdownManager::new());
+    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
+    info!("Starting W.R. Study Assistant...");
 
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .setup(move |app| {
+        .setup(|app| {
             let app_handle = app.handle().clone();
-            let crypto_clone = crypto.clone();
+            let app_data_path = app.path().app_data_dir().unwrap_or_else(|_| {
+                std::env::current_dir().unwrap().join("data")
+            });
 
-            tauri::async_runtime::block_on(async move {
-                let db = Arc::new(DatabaseManager::new(crypto_clone.clone()).await);
+            tauri::async_runtime::spawn(async move {
+                let crypto = match CryptoManager::new(app_data_path.clone()) {
+                    Ok(c) => Arc::new(c),
+                    Err(e) => {
+                        error!("Failed to initialize crypto: {}", e);
+                        return;
+                    }
+                };
+
+                let db = match DatabaseManager::new(crypto.clone(), app_data_path).await {
+                    Ok(d) => Arc::new(d),
+                    Err(e) => {
+                        error!("Failed to initialize database: {}", e);
+                        return;
+                    }
+                };
 
                 let seed_data = include_str!("curriculum_seed.json");
                 let v: serde_json::Value = serde_json::from_str(seed_data).unwrap();
                 if let Some(problems) = v["curriculum"].as_array() {
                     for p in problems {
-                        let id = p["id"].as_str().unwrap();
-                        let content = serde_json::to_vec(p).unwrap();
-                        db.store_curriculum(id, &content).await;
+                        if let Some(id) = p["id"].as_str() {
+                            let content = serde_json::to_vec(p).unwrap();
+                            let _ = db.store_curriculum(id, &content).await;
+                        }
                     }
                 }
 
                 app_handle.manage(AppState {
-                    crypto: crypto_clone,
+                    crypto,
                     db,
-                    lockdown: lockdown.clone(),
+                    lockdown: Arc::new(LockdownManager::new()),
                 });
+                info!("Backend services initialized successfully.");
             });
 
-            // Removal of restrictive setup
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![

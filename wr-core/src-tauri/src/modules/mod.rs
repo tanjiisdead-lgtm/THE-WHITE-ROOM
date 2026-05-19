@@ -6,6 +6,9 @@ pub mod ai;
 pub mod biometrics;
 pub mod database;
 
+#[cfg(test)]
+mod crypto_tests;
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct LogicGate {
     pub id: String,
