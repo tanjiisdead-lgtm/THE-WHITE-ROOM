@@ -1,0 +1,37 @@
+{
+  "curriculum": [
+    {
+      "id": "ZERO_G_001",
+      "difficulty": 850,
+      "metadata": {
+        "type": "Olympiad_Synthesis",
+        "axis": "Physics"
+      },
+      "content": "IRODOV 1.25: A point moves in the plane xy according to the law x = at, y = at(1 - bt), where a and b are positive constants. Find: (a) the equation of the point's trajectory y(x); (b) the velocity v and the acceleration w of the point as a function of time."
+    },
+    {
+      "id": "ZERO_G_002",
+      "difficulty": 900,
+      "metadata": {
+        "type": "Olympiad_Synthesis",
+        "axis": "Math"
+      },
+      "content": "SPIVAK CH.10: Let f be a function such that f(x+y) = f(x)f(y) for all x, y. If f is differentiable at 0 and f(0) != 0, prove that f is differentiable everywhere and f'(x) = f'(0)f(x)."
+    },
+    {
+      "id": "ZERO_G_003",
+      "difficulty": 950,
+      "metadata": {
+        "type": "Olympiad_Synthesis",
+        "axis": "Math"
+      },
+      "content": "IMO SHORTLIST (ALGEBRA): Let a, b, c be positive real numbers such that abc = 1. Prove that (a+b)(b+c)(c+a) >= 8."
+    }
+  ],
+  "cycle_benchmarks": {
+    "month_1": {
+      "accuracy_threshold": 0.98,
+      "physical_requirements": ["25 Pull-ups", "100 Push-ups (2 min)", "5km run < 25 min"]
+    }
+  }
+}

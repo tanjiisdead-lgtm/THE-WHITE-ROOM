@@ -1,0 +1,11 @@
+
+> tauri-app@0.1.0 dev
+> vite dev
+
+5:01:37 AM [vite] (client) Forced re-optimization of dependencies
+
+  VITE v6.4.2  ready in 985 ms
+
+  ➜  Local:   http://localhost:1420/
+5:02:43 AM [vite-plugin-svelte] src/routes/+page.svelte:44:60 Avoid using autofocus
+https://svelte.dev/e/a11y_autofocus
