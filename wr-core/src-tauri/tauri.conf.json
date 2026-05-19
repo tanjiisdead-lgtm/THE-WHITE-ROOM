@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "White Room Core",
+  "productName": "White Room Study Assistant",
   "version": "1.0.0",
-  "identifier": "internal.white-room.core",
+  "identifier": "internal.white-room.assistant",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
@@ -12,13 +12,12 @@
   "app": {
     "windows": [
       {
-        "title": "White Room Core",
-        "width": 800,
-        "height": 600,
-        "fullscreen": true,
-        "resizable": false,
-        "alwaysOnTop": true,
-        "decorations": false
+        "title": "W.R. Study Assistant",
+        "width": 1024,
+        "height": 768,
+        "fullscreen": false,
+        "resizable": true,
+        "decorations": true
       }
     ],
     "security": {

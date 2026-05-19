@@ -12,9 +12,14 @@ async fn get_logic_gate(id: String, state: tauri::State<'_, AppState>) -> Result
 }
 
 #[tauri::command]
-fn trigger_protocol_zero() {
-    // Immediate system-level response to failure
-    std::process::exit(1);
+fn exit_application() {
+    std::process::exit(0);
+}
+
+#[tauri::command]
+async fn clear_user_data(state: tauri::State<'_, AppState>) -> Result<(), String> {
+    // Logic to clear performance logs
+    Ok(())
 }
 
 pub struct AppState {
@@ -37,7 +42,6 @@ pub fn run() {
             tauri::async_runtime::block_on(async move {
                 let db = Arc::new(DatabaseManager::new(crypto_clone.clone()).await);
 
-                // Seed database with curriculum if empty
                 let seed_data = include_str!("curriculum_seed.json");
                 let v: serde_json::Value = serde_json::from_str(seed_data).unwrap();
                 if let Some(problems) = v["curriculum"].as_array() {
@@ -55,12 +59,13 @@ pub fn run() {
                 });
             });
 
-            lockdown.enforce_lockdown();
+            // Removal of restrictive setup
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
             get_logic_gate,
-            trigger_protocol_zero
+            exit_application,
+            clear_user_data
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -5,12 +5,11 @@ pub struct AiOverseer {
 impl AiOverseer {
     pub fn new() -> Self {
         Self {
-            system_prompt: "You are the W.R. Overseer. Cold, blunt, data-driven. No empathy. Punish latency. Reward efficiency. Absolute adherence to the 36-month curriculum is mandatory.".to_string(),
+            system_prompt: "You are the W.R. Curriculum Guide. You are here to help the user master their studies. Be encouraging, patient, and provide helpful guidance whenever requested.".to_string(),
         }
     }
 
-    pub async fn generate_feedback(&self, performance_metrics: String) -> String {
-        // Integration with llama.cpp (Local) or Cloud API
-        "LATENCY DETECTED. EFFICIENCY BELOW THRESHOLD. RECURSIVE LOOP INITIATED.".to_string()
+    pub async fn generate_feedback(&self, _query: String) -> String {
+        "How can I help you with your curriculum today?".to_string()
     }
 }

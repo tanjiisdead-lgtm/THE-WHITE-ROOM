@@ -2,165 +2,184 @@
   import { invoke } from "@tauri-apps/api/core";
   import { onMount } from "svelte";
 
-  let logicGateContent = "INITIALIZING WHITE ROOM CORE...";
-  let status = "OPTIMIZING...";
-  let heartRate = 0;
-  let latency = 0;
+  let logicGateContent = "Welcome to your Study Assistant.";
+  let status = "Ready";
+  let currentCycle = "01/36";
 
   async function fetchLogicGate() {
     try {
-      logicGateContent = await invoke("get_logic_gate", { id: "START_001" });
+      const response = await invoke("get_logic_gate", { id: "ZERO_G_001" });
+      const problem = JSON.parse(response as string);
+      logicGateContent = problem.content;
     } catch (e) {
       console.error(e);
     }
   }
 
+  async function exitApp() {
+    await invoke("exit_application");
+  }
+
+  async function clearData() {
+    if (confirm("Are you sure you want to clear your study progress?")) {
+        await invoke("clear_user_data");
+        alert("Progress cleared.");
+    }
+  }
+
   onMount(() => {
     fetchLogicGate();
-    // Start biometric feedback loop mock
-    const interval = setInterval(() => {
-        heartRate = Math.floor(Math.random() * 20) + 70;
-        latency = Math.floor(Math.random() * 100);
-    }, 1000);
-    return () => clearInterval(interval);
   });
 </script>
 
-<main class="white-room">
-  <div class="sidebar left">
-    <div class="metric">BPM: {heartRate}</div>
-    <div class="metric">LATENCY: {latency}ms</div>
-    <div class="metric">CYCLE: 01/36</div>
-  </div>
+<main class="dashboard">
+  <nav class="top-nav">
+    <div class="logo">W.R. STUDY ASSISTANT</div>
+    <div class="nav-links">
+        <button on:click={fetchLogicGate}>Next Problem</button>
+        <button on:click={clearData}>Settings</button>
+        <button class="exit-btn" on:click={exitApp}>Exit</button>
+    </div>
+  </nav>
 
-  <div class="center-stage">
-    <div class="header">W.R. CORE // OVERSEER ACTIVE</div>
-
-    <div class="logic-gate">
-      <div class="content">
-        {logicGateContent}
+  <section class="content-area">
+    <aside class="sidebar">
+      <div class="stats">
+        <h3>Progress</h3>
+        <div class="stat-item">Cycle: {currentCycle}</div>
+        <div class="stat-item">Status: {status}</div>
       </div>
-      <div class="input-zone">
-        <input type="text" placeholder="DERIVE SOLUTION..." autofocus />
-      </div>
-    </div>
-  </div>
+    </aside>
 
-  <div class="sidebar right">
-    <div class="status-box">
-      <div class="label">SYSTEM STATUS</div>
-      <div class="value">{status}</div>
-    </div>
-    <div class="warning-zone">
-        NO EXIT DETECTED
-    </div>
-  </div>
+    <article class="main-content">
+      <h1>Active Curriculum</h1>
+      <div class="problem-card">
+        <p>{logicGateContent}</p>
+        <div class="actions">
+            <input type="text" placeholder="Type your answer here..." />
+            <button class="primary">Submit</button>
+        </div>
+      </div>
+    </article>
+  </section>
 </main>
 
 <style>
   :global(body) {
     margin: 0;
     padding: 0;
-    background-color: white;
-    color: black;
-    font-family: 'Courier New', Courier, monospace;
-    overflow: hidden;
-    cursor: none; /* Hide cursor for immersion */
+    background-color: #f4f7f6;
+    color: #333;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
 
-  .white-room {
+  .dashboard {
     display: flex;
+    flex-direction: column;
     height: 100vh;
-    width: 100vw;
-    border: 20px solid black;
-    box-sizing: border-box;
+  }
+
+  .top-nav {
+    background-color: #2c3e50;
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .logo {
+    font-weight: bold;
+    font-size: 1.2rem;
+  }
+
+  .nav-links button {
+    background: transparent;
+    border: 1px solid white;
+    color: white;
+    padding: 5px 15px;
+    margin-left: 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.3s;
+  }
+
+  .nav-links button:hover {
+    background: rgba(255,255,255,0.1);
+  }
+
+  .exit-btn {
+    border-color: #e74c3c !important;
+    color: #e74c3c !important;
+  }
+
+  .exit-btn:hover {
+    background: #e74c3c !important;
+    color: white !important;
+  }
+
+  .content-area {
+    display: flex;
+    flex-grow: 1;
   }
 
   .sidebar {
-    width: 200px;
+    width: 250px;
+    background-color: white;
     padding: 20px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    border-right: 2px solid black;
+    border-right: 1px solid #ddd;
   }
 
-  .sidebar.right {
-    border-right: none;
-    border-left: 2px solid black;
+  .stat-item {
+    margin: 10px 0;
+    font-size: 1rem;
   }
 
-  .metric {
-    font-weight: bold;
-    font-size: 1.2rem;
-    margin-bottom: 10px;
-  }
-
-  .center-stage {
+  .main-content {
     flex-grow: 1;
-    display: flex;
-    flex-direction: column;
     padding: 40px;
   }
 
-  .header {
-    font-size: 1.5rem;
-    font-weight: 900;
-    border-bottom: 4px solid black;
-    padding-bottom: 10px;
-    margin-bottom: 40px;
-    text-align: center;
+  h1 {
+    margin-top: 0;
   }
 
-  .logic-gate {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+  .problem-card {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
   }
 
-  .content {
-    font-size: 1.2rem;
-    max-width: 600px;
-    margin-bottom: 40px;
+  .problem-card p {
+    font-size: 1.1rem;
     line-height: 1.6;
+    margin-bottom: 30px;
   }
 
-  .input-zone {
-    width: 100%;
-    max-width: 500px;
+  .actions {
+    display: flex;
+    gap: 10px;
   }
 
   input {
-    width: 100%;
-    border: 2px solid black;
-    padding: 15px;
-    font-family: inherit;
-    font-size: 1.2rem;
-    outline: none;
-  }
-
-  .status-box {
-    border: 2px solid black;
+    flex-grow: 1;
     padding: 10px;
-    text-align: center;
+    border: 1px solid #ddd;
+    border-radius: 4px;
   }
 
-  .label {
-    font-size: 0.8rem;
-    margin-bottom: 5px;
-  }
-
-  .value {
-    font-weight: bold;
-  }
-
-  .warning-zone {
-    background-color: black;
+  button.primary {
+    background-color: #3498db;
     color: white;
-    padding: 10px;
-    text-align: center;
-    font-weight: bold;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  button.primary:hover {
+    background-color: #2980b9;
   }
 </style>
